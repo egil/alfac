@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "alfac", "alfac.csproj", "{DB90EBE6-9585-480D-B53E-E3E129E6B14B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DB90EBE6-9585-480D-B53E-E3E129E6B14B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB90EBE6-9585-480D-B53E-E3E129E6B14B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB90EBE6-9585-480D-B53E-E3E129E6B14B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB90EBE6-9585-480D-B53E-E3E129E6B14B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
