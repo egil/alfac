@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("alfac")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Apache Log File to Access Converter")]
+[assembly: AssemblyDescription("An console based Apache Log File to Access database converter for Windows.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Egil Hansen")]
 [assembly: AssemblyProduct("alfac")]
-[assembly: AssemblyCopyright("Copyright ©  2012")]
+[assembly: AssemblyCopyright("Copyright © Egil Hansen 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -1,1 +1,1 @@
-﻿An console based Apache Log File to Access database converter.
+﻿An console based Apache Log File to Access database converter for Windows.
