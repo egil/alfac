@@ -11,22 +11,23 @@ namespace Assimilated.Alfac.LogHandlers
     public class CombinedLogFormatHandler : ILogFileHandler
     {
         private const string InsertSql =
-            "INSERT INTO Access([RemoteHost],[RemoteLogname],[RemoteUser],[Time],[Method],[URL],[Protocol],[Status],[BytesSent],[Referer],[UserAgent]) " +
-            "VALUES(@RemoteHost,@RemoteLogname,@RemoteUser,@Time,@Method,@URL,@Protocol,@Status,@BytesSent,@Referer,@UserAgent)";
+            "INSERT INTO Access([RemoteHost],[RemoteIdentity],[RemoteUser],[Time],[Method],[URL],[Protocol],[Status],[BytesSent],[Referer],[UserAgent]) " +
+            "VALUES(@RemoteHost,@RemoteIdentity,@RemoteUser,@Time,@Method,@URL,@Protocol,@Status,@BytesSent,@Referer,@UserAgent)";
 
         private const string RegexPattern = @"(\S+) (\S+) (\S+) \[([^:]+):(\d+:\d+:\d+) ([^\]]+)\] ""(\S+) (.+?) (\S+)[ ]*"" (\S+) (\S+) ""([^""]*?)"" ""([^""]*?)""";
         private readonly Regex combinedFormatMatcher = new Regex(RegexPattern, RegexOptions.Compiled);
 
         public string LogFormat { get { return "\"%h %l %u %t \"%r\" %>s %b\" common"; } }
+        public string TableName { get { return "Access"; } }
         public string Name { get { return "Combined Log Format"; } }
         public LogFileType LogFileType { get { return LogFileType.CombinedLogFormat; } }
 
         public ADOX.Table GetTable()
         {
             var table = new ADOX.Table();
-            table.Name = "Access";
+            table.Name = TableName;
             table.Columns.Append("RemoteHost");
-            table.Columns.Append("RemoteLogname");
+            table.Columns.Append("RemoteIdentity");
             table.Columns.Append("RemoteUser");
             table.Columns.Append("Time", DataTypeEnum.adDate);
             table.Columns.Append("Method");
@@ -83,7 +84,7 @@ namespace Assimilated.Alfac.LogHandlers
 
                     // set up paramters
                     var remoteHost = CreateParamater(cmd, "@RemoteHost");
-                    var remoteLogname = CreateParamater(cmd, "@RemoteLogname");
+                    var remoteLogname = CreateParamater(cmd, "@RemoteIdentity");
                     var remoteUser = CreateParamater(cmd, "@RemoteUser");
                     var time = CreateParamater(cmd, "@Time");
                     var method = CreateParamater(cmd, "@Method");
@@ -193,7 +194,7 @@ namespace Assimilated.Alfac.LogHandlers
                 {
                     using (var decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress))
                     {
-                        decompressionStream.CopyTo(decompressedFileStream);
+                        decompressionStream.CopyTo(decompressedFileStream); 
                     }
                 }
             }

@@ -2,6 +2,7 @@
 using System.Data.OleDb;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Assimilated.Alfac.LogHandlers;
 using Assimilated.Alfac.Utils;
 
@@ -28,11 +29,11 @@ namespace Assimilated.Alfac
             Console.WriteLine();
             Console.WriteLine("Runtime settings:");
             Console.WriteLine();
-            Console.WriteLine("  Database File (db):\t {0}", _dbFileName.FullName);            
+            Console.WriteLine("  Database File (db):\t {0}", _dbFileName.FullName);
             Console.WriteLine("  Logs Directory (logs): {0}", _logs.FullName);
             Console.WriteLine("  Log filter (filter):\t {0}", _logFilter);
-            Console.WriteLine("  Log File Type (type):  {0}", _logFileHandler.Name);            
-            Console.WriteLine("  Error Log (errorlog):  {0}", _errorLog != null ? _errorLog.FullName : "n/a");            
+            Console.WriteLine("  Log File Type (type):  {0}", _logFileHandler.Name);
+            Console.WriteLine("  Error Log (errorlog):  {0}", _errorLog != null ? _errorLog.FullName : "n/a");
             Console.WriteLine();
 
             // create target database based on log file type
@@ -42,14 +43,44 @@ namespace Assimilated.Alfac
                               Provider = "Microsoft.Jet.OLEDB.4.0"
                           };
             // create database
-            CreateAccessDatabase(csb.ToString());
+            if (_dbFileName.Exists)
+            {
+                AddTable(csb);
+            }
+            else
+            {
+                CreateAccessDatabase(csb.ToString());
+            }
+
 
             // parse each log file, add each log entry to database
             Console.WriteLine("Staring processing . . .");
             Console.WriteLine();
+
             _logFileHandler.AddLogFilesToDatabase(_logs.GetFiles(_logFilter), csb.ToString(), _errorLog);
 
             Console.WriteLine();
+        }
+
+        private static void AddTable(OleDbConnectionStringBuilder csb)
+        {
+            // check if table exists
+            var con = new ADODB.Connection();
+            con.Open(csb.ToString());
+            var db = new ADOX.Catalog();
+            db.ActiveConnection = con;
+            try
+            {
+                var table = db.Tables[_logFileHandler.TableName];
+            }
+            catch (COMException)
+            {
+                db.Tables.Append(_logFileHandler.GetTable());
+            }
+            finally
+            {
+                con.Close();
+            }
         }
 
         private static void CreateAccessDatabase(string connectionString)
@@ -59,17 +90,17 @@ namespace Assimilated.Alfac
             db.Tables.Append(_logFileHandler.GetTable());
 
             // get active connection if any
-            //var connection = db.ActiveConnection as ADODB.Connection;
+            var connection = db.ActiveConnection as ADODB.Connection;
 
             // close connection to database if open
-            //if (connection != null) connection.Close();
+            if (connection != null) connection.Close();
 
             // release memory
             db = null;
         }
 
         private static void ParseCommandlineArguments(string[] args)
-        {            
+        {
             var arguments = new Arguments(args);
 
             // get target database
@@ -90,15 +121,15 @@ namespace Assimilated.Alfac
                 Environment.Exit(1);
             }
 
-            if (_dbFileName.Exists || arguments["overwrite"] != null)
+            if (_dbFileName.Exists && arguments["overwrite"] != null)
             {
-                _dbFileName.Delete();                
+                _dbFileName.Delete();
             }
 
             // get apache log file type
             if (arguments["type"] == null || !LogFileType.TryParse(arguments["type"], out _type))
             {
-                _type = LogFileType.CommonLogFormat;
+                _type = LogFileType.CombinedLogFormat;
             }
             _logFileHandler = LogFileHandlerFactory.Create(_type);
 
@@ -110,7 +141,7 @@ namespace Assimilated.Alfac
             }
             try
             {
-                _logs = new DirectoryInfo(arguments["logs"]);               
+                _logs = new DirectoryInfo(arguments["logs"]);
             }
             catch (Exception)
             {
@@ -126,7 +157,12 @@ namespace Assimilated.Alfac
             }
 
             _logFilter = arguments["filter"] ?? "*.*";
-            _errorLog = new FileInfo(arguments["errorlog"]);
+            try
+            {
+                _errorLog = new FileInfo(arguments["errorlog"]);
+            }
+            catch (Exception) { }
+
         }
     }
 }
