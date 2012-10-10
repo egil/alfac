@@ -1,33 +1,20 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Assimilated.Alfac.Utils
 {
-    public class LogFilesReader
+    public static class LogFilesReader
     {
-        public IEnumerable<FileInfo> LogFiles { get; set; }
-
-        public LogFilesReader() { }
-        public LogFilesReader(IEnumerable<FileInfo> logFiles)
-        {
-            LogFiles = logFiles;
-        }
-
-        public IEnumerable<string> GetEntires()
-        {
-            return LogFiles.SelectMany(GetEntries);
-        }
-
-        private IEnumerable<string> GetEntries(FileInfo logFile)
+        public static IEnumerable<string> GetEntries(FileInfo logFile)
         {
             // stop iterating if file does not exist
-            if (!logFile.Exists) throw new ArgumentException("Log file does not exist. {0}", logFile.FullName);
+            if (!logFile.Exists)
+            {
+                Logger.Warning("Log file does not exist. {0}", logFile.FullName);
+                yield break;
+            }
 
             string logFileName = logFile.FullName;
             var isCompressed = false;
@@ -35,14 +22,18 @@ namespace Assimilated.Alfac.Utils
             // Create a filestreme to the file and test if is compressed
             using (var logFileStream = File.OpenRead(logFileName))
             {
-                if (!logFileStream.CanRead) throw new ArgumentException("Unable to open log file for reading: {0}", logFileName);
+                if (!logFileStream.CanRead)
+                {
+                    Logger.Warning("Unable to open log file for reading: {0}", logFileName);
+                }
 
-                // Check if it is a compressed file
-                isCompressed = CheckSignature(logFileStream, 3, "1F-8B-08") || CheckSignature(logFileStream, 4, "50-4B-03-04");
+                // Check if it is a compressed file (detect .gz files)
+                isCompressed = CheckSignature(logFileStream, 3, "1F-8B-08");
 
                 // decompress the log file if it is in a .gz or .zip file
                 if (isCompressed)
                 {
+                    Logger.Info("Decompressing: {0}", logFile.FullName);
                     logFileName = DecompressFile(logFile);
                 }
             }
